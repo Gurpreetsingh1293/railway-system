@@ -4,13 +4,11 @@ version: '3.9'
 # RailBlock AI — Docker Compose (Local Development)
 # SIH PS 26027
 #
-# Services:
-#   postgres    — PostgreSQL 15 database
-#   backend     — Spring Boot 3.x REST API + Flyway migrations
-#   frontend    — React (Vite) — FULLY DECOUPLED via VITE_API_BASE_URL
-#   ml-service  — Python FastAPI ML scoring (optional)
-#
-# Run: docker compose up --build
+# Ports used (chosen to avoid conflicts with other projects):
+#   postgres    → host:5435  (container: 5432)
+#   backend     → host:8090  (container: 8080)
+#   frontend    → host:3001  (container: 80)
+#   ml-service  → host:8000  (container: 8000)  ← already running
 # ============================================================
 
 services:
@@ -24,7 +22,7 @@ services:
       POSTGRES_USER: railway
       POSTGRES_PASSWORD: railway
     ports:
-      - "5432:5432"
+      - "5435:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -40,43 +38,41 @@ services:
       dockerfile: Dockerfile
     container_name: railblock-backend
     ports:
-      - "8080:8080"
+      - "8090:8080"
     environment:
+      # Internal Docker network — containers talk on container ports (5432, 8080)
       DB_URL: jdbc:postgresql://postgres:5432/railway_blocks
       DB_USER: railway
       DB_PASS: railway
       PORT: 8080
       SCORING_MODE: RULE_BASED
-      # Set to http://ml-service:8000 to enable ML scoring
       SCORING_ML_SERVICE_URL: http://ml-service:8000
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 40s
 
   # ---- React Frontend (DECOUPLED) ----
-  # To switch the frontend: replace this service with any other
-  # UI that reads VITE_API_BASE_URL and calls /api/v1/* endpoints
+  # VITE_API_BASE_URL uses the HOST port (8090) because the
+  # browser (outside Docker) accesses the backend via the host.
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: http://localhost:8080
+        VITE_API_BASE_URL: http://localhost:8090
     container_name: railblock-frontend
     ports:
-      - "3000:80"
+      - "3001:80"
     depends_on:
       - backend
 
   # ---- ML Scoring Microservice (Optional) ----
-  # Disable this service if you don't need ML scoring.
-  # Backend falls back to RULE_BASED automatically if this is down.
   ml-service:
     build:
       context: ./ml-service
@@ -85,7 +81,7 @@ services:
     ports:
       - "8000:8000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3
