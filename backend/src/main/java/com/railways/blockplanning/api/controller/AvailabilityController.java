@@ -1,6 +1,7 @@
 package com.railways.blockplanning.api.controller;
 
 import com.railways.blockplanning.api.dto.ApiResponse;
+import com.railways.blockplanning.api.dto.CoaAvailabilityDto;
 import com.railways.blockplanning.domain.CoaAvailability;
 import com.railways.blockplanning.repository.CoaAvailabilityRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +24,7 @@ public class AvailabilityController {
 
     @GetMapping
     @Operation(summary = "List all availability windows, with optional date range filter")
-    public ResponseEntity<ApiResponse<List<CoaAvailability>>> listAll(
+    public ResponseEntity<ApiResponse<List<CoaAvailabilityDto>>> listAll(
             @RequestParam(required = false) Long corridorId,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to) {
@@ -42,6 +43,19 @@ public class AvailabilityController {
             windows = coaAvailabilityRepository.findAll();
         }
 
-        return ResponseEntity.ok(ApiResponse.ok(windows));
+        List<CoaAvailabilityDto> dtos = windows.stream().map(this::toDto).toList();
+        return ResponseEntity.ok(ApiResponse.ok(dtos));
+    }
+
+    private CoaAvailabilityDto toDto(CoaAvailability a) {
+        CoaAvailabilityDto dto = new CoaAvailabilityDto();
+        dto.setId(a.getId());
+        dto.setCorridorId(a.getCorridor() != null ? a.getCorridor().getId() : null);
+        dto.setCorridorName(a.getCorridor() != null ? a.getCorridor().getCorridorName() : null);
+        dto.setAvailableDate(a.getAvailableDate());
+        dto.setWindowStartHour(a.getWindowStartHour());
+        dto.setMaxDurationHours(a.getMaxDurationHours());
+        dto.setReason(a.getReason());
+        return dto;
     }
 }
