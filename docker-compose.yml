@@ -1,0 +1,94 @@
+version: '3.9'
+
+# ============================================================
+# RailBlock AI — Docker Compose (Local Development)
+# SIH PS 26027
+#
+# Services:
+#   postgres    — PostgreSQL 15 database
+#   backend     — Spring Boot 3.x REST API + Flyway migrations
+#   frontend    — React (Vite) — FULLY DECOUPLED via VITE_API_BASE_URL
+#   ml-service  — Python FastAPI ML scoring (optional)
+#
+# Run: docker compose up --build
+# ============================================================
+
+services:
+
+  # ---- PostgreSQL 15 ----
+  postgres:
+    image: postgres:15-alpine
+    container_name: railblock-postgres
+    environment:
+      POSTGRES_DB: railway_blocks
+      POSTGRES_USER: railway
+      POSTGRES_PASSWORD: railway
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U railway -d railway_blocks"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- Spring Boot Backend ----
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: railblock-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/railway_blocks
+      DB_USER: railway
+      DB_PASS: railway
+      PORT: 8080
+      SCORING_MODE: RULE_BASED
+      # Set to http://ml-service:8000 to enable ML scoring
+      SCORING_ML_SERVICE_URL: http://ml-service:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---- React Frontend (DECOUPLED) ----
+  # To switch the frontend: replace this service with any other
+  # UI that reads VITE_API_BASE_URL and calls /api/v1/* endpoints
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: railblock-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  # ---- ML Scoring Microservice (Optional) ----
+  # Disable this service if you don't need ML scoring.
+  # Backend falls back to RULE_BASED automatically if this is down.
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: railblock-ml
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:

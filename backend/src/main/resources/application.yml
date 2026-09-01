@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: block-planning
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/railway_blocks}
+    username: ${DB_USER:railway}
+    password: ${DB_PASS:railway}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: ${PORT:8080}
+
+# Springdoc / Swagger UI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+
+# Scoring configuration — all weights externalized so they can be tuned
+scoring:
+  mode: ${SCORING_MODE:RULE_BASED}   # RULE_BASED | ML
+  ml-service-url: ${SCORING_ML_SERVICE_URL:http://localhost:8000}
+  weights:
+    severity:
+      critical: 10.0
+      major: 5.0
+      minor: 1.0
+    overdue-factor: 0.5
+    max-overdue-days: 30
+    safety-risk:
+      high: 3.0
+      medium: 2.0
+      low: 1.0
+
+# Timefold Solver
+timefold:
+  solver:
+    termination:
+      spent-limit: 30s

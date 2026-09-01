@@ -1,0 +1,81 @@
+# ============================================================
+# RailBlock AI — .gitignore
+# ============================================================
+
+# ---- Java / Maven ----
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+hs_err_pid*
+replay_pid*
+
+# ---- Spring Boot ----
+spring-shell.log
+*.log
+
+# ---- Node / React ----
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# ---- Vite ----
+.vite/
+vite.config.js.timestamp-*
+
+# ---- Environment files (NEVER commit secrets) ----
+.env.local
+.env.*.local
+.env.production
+# Keep .env.example if you add one
+
+# ---- Python / ML service ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+ml-service/model/
+*.pkl
+*.joblib
+venv/
+env/
+.venv/
+pip-wheel-metadata/
+*.egg-info/
+dist/
+.eggs/
+
+# ---- Docker ----
+.docker/
+
+# ---- IDE ----
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ---- Database ----
+*.sql.bak
+postgres-data/
+
+# ---- OS ----
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini

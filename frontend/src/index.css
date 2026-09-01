@@ -1,0 +1,136 @@
+/* ============================================================
+   RailBlock AI — Global Styles
+   Dark glassmorphism theme with railway-inspired accents
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-primary:   #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card:      #1c2230;
+  --accent-blue:  #4f8ef7;
+  --accent-green: #3dd68c;
+  --accent-amber: #f5a623;
+  --accent-red:   #f85149;
+  --accent-purple:#a371f7;
+  --text-primary: #e6edf3;
+  --text-muted:   #8b949e;
+  --border:       rgba(255,255,255,0.08);
+  --glass-bg:     rgba(28, 34, 48, 0.7);
+  --shadow:       0 4px 24px rgba(0,0,0,0.4);
+  --radius:       12px;
+}
+
+html, body {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+/* Glass card utility */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* Severity badge colors */
+.severity-critical { color: var(--accent-red);    font-weight: 600; }
+.severity-major    { color: var(--accent-amber);  font-weight: 600; }
+.severity-minor    { color: var(--accent-green);  font-weight: 600; }
+
+/* Source system tags */
+.source-tms  { background: rgba(79,142,247,0.15); color: #4f8ef7; }
+.source-smms { background: rgba(163,113,247,0.15);color: #a371f7; }
+.source-tdms { background: rgba(61,214,140,0.15); color: #3dd68c; }
+
+/* Scoring mode badge */
+.scoring-badge-rule { background: rgba(79,142,247,0.2);  color: #4f8ef7;  border: 1px solid #4f8ef7; }
+.scoring-badge-ml   { background: rgba(61,214,140,0.2);  color: #3dd68c;  border: 1px solid #3dd68c; }
+
+/* Status indicator dots */
+.status-open     { color: var(--accent-blue); }
+.status-overdue  { color: var(--accent-red); }
+.status-scheduled{ color: var(--accent-green); }
+.status-closed   { color: var(--text-muted); }
+
+/* Animated gradient header */
+.page-header {
+  background: linear-gradient(135deg, #1c2230 0%, #0d1117 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+/* Micro-animation: fade in up */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeInUp 0.35s ease both;
+}
+
+/* Pulse animation for live indicators */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.pulse { animation: pulse 2s ease-in-out infinite; }
+
+/* KPI Card */
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.kpi-value {
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.kpi-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+/* Gantt bars */
+.gantt-bundled { background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
+.gantt-single  { background: linear-gradient(90deg, var(--accent-blue), #3b6fd4); }
+
+/* Ant Design overrides for dark theme */
+.ant-layout { background: var(--bg-primary) !important; }
+.ant-layout-sider { background: var(--bg-secondary) !important; border-right: 1px solid var(--border) !important; }
+.ant-menu { background: transparent !important; }
+.ant-table-wrapper .ant-table { background: var(--bg-card) !important; }
+.ant-table-wrapper .ant-table-thead > tr > th { background: var(--bg-secondary) !important; }
