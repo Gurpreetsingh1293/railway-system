@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layout, Menu, Tag, Typography, Space } from 'antd';
+import { Layout, Menu, Tag, Typography, Space, Segmented } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
@@ -8,7 +8,10 @@ import {
   BarChartOutlined,
   SettingOutlined,
   TrademarkOutlined,
+  RobotOutlined,
+  CalculatorOutlined,
 } from '@ant-design/icons';
+import { useScoring } from '../context/ScoringContext';
 
 const { Sider, Content, Header } = Layout;
 const { Text } = Typography;
@@ -25,6 +28,7 @@ export default function AppLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { scoringMode, switchMode, toggling } = useScoring();
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -98,7 +102,7 @@ export default function AppLayout({ children }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: 56,
+          height: 60,
           position: 'sticky',
           top: 0,
           zIndex: 99,
@@ -106,17 +110,53 @@ export default function AppLayout({ children }) {
           <Text style={{ color: 'var(--text-muted)', fontSize: 13 }}>
             Ministry of Railways · AI-Powered Block Planning
           </Text>
-          <Space>
+          <Space size="middle" align="middle">
+            {/* Interactive AI / Rule-Based Toggle Switch in Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: 'rgba(255, 255, 255, 0.05)',
+              padding: '3px 6px',
+              borderRadius: '8px',
+              border: '1px solid var(--border)',
+            }}>
+              <Text style={{ fontSize: 12, marginRight: 8, color: 'var(--text-muted)' }}>
+                Scoring Engine:
+              </Text>
+              <Segmented
+                disabled={toggling}
+                value={scoringMode}
+                onChange={(value) => switchMode(value)}
+                options={[
+                  {
+                    label: (
+                      <span style={{ padding: '0 4px', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                        <CalculatorOutlined style={{ color: scoringMode === 'RULE_BASED' ? '#4f8ef7' : 'inherit' }} />
+                        <span>Rule-Based</span>
+                      </span>
+                    ),
+                    value: 'RULE_BASED',
+                  },
+                  {
+                    label: (
+                      <span style={{ padding: '0 4px', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                        <RobotOutlined style={{ color: scoringMode === 'ML' ? '#3dd68c' : 'inherit' }} />
+                        <span>AI / ML Model</span>
+                      </span>
+                    ),
+                    value: 'ML',
+                  },
+                ]}
+              />
+            </div>
+
             <Tag color="blue" style={{ fontSize: 11 }}>
-              Adapter: Mock (Synthetic)
-            </Tag>
-            <Tag color="geekblue" style={{ fontSize: 11 }}>
-              v1.0.0
+              Adapter: Mock
             </Tag>
           </Space>
         </Header>
 
-        <Content style={{ padding: 24, minHeight: 'calc(100vh - 56px)' }}>
+        <Content style={{ padding: 24, minHeight: 'calc(100vh - 60px)' }}>
           {children}
         </Content>
       </Layout>

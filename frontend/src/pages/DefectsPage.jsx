@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Table, Tag, Select, Space, Button, Typography, Input, message, Spin } from 'antd';
-import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Table, Tag, Select, Space, Button, Typography, message, Spin, Tooltip } from 'antd';
+import { SearchOutlined, ReloadOutlined, RobotOutlined, CalculatorOutlined } from '@ant-design/icons';
 import { defectApi } from '../api/defectApi';
+import { useScoring } from '../context/ScoringContext';
 
 const { Title, Text } = Typography;
 
@@ -10,20 +11,21 @@ const SRC_COLOR = { TMS: 'blue', SMMS: 'purple', TDMS: 'green' };
 const STATUS_COLOR = { Open: 'blue', Overdue: 'red', Scheduled: 'cyan', Closed: 'default' };
 
 export default function DefectsPage() {
+  const { scoringMode, switchMode, toggling, lastUpdated } = useScoring();
   const [defects, setDefects] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [scoringMode, setScoringMode] = useState('RULE_BASED');
   const [filters, setFilters] = useState({});
   const [messageApi, contextHolder] = message.useMessage();
 
-  useEffect(() => { loadDefects(); }, [filters]);
+  useEffect(() => {
+    loadDefects();
+  }, [filters, lastUpdated]);
 
   async function loadDefects() {
     setLoading(true);
     try {
       const res = await defectApi.getAll(filters);
-      setDefects(res.data.data || []);
-      setScoringMode(res.data.scoringMode || 'RULE_BASED');
+      setDefects(res.data?.data || []);
     } catch {
       messageApi.warning('Backend not reachable');
     } finally {
@@ -35,7 +37,7 @@ export default function DefectsPage() {
     setLoading(true);
     try {
       await defectApi.rescoreAll();
-      messageApi.success('Priority scores recomputed!');
+      messageApi.success(`Priority scores recomputed using ${scoringMode === 'ML' ? 'AI/ML' : 'Rule-Based'} engine!`);
       loadDefects();
     } catch {
       messageApi.error('Scoring failed');
@@ -43,6 +45,8 @@ export default function DefectsPage() {
       setLoading(false);
     }
   }
+
+  const isMlMode = scoringMode === 'ML';
 
   const columns = [
     {
@@ -104,9 +108,16 @@ export default function DefectsPage() {
       sorter: (a, b) => a.estimatedRepairHours - b.estimatedRepairHours,
     },
     {
-      title: 'Priority Score',
+      title: (
+        <span>
+          Priority Score{' '}
+          <Tag color={isMlMode ? 'green' : 'blue'} style={{ fontSize: 10, marginLeft: 4 }}>
+            {isMlMode ? 'ML' : 'RULE'}
+          </Tag>
+        </span>
+      ),
       dataIndex: 'priorityScore',
-      width: 120,
+      width: 130,
       render: (v) => (
         <span style={{
           color: v >= 20 ? 'var(--accent-red)' : v >= 10 ? 'var(--accent-amber)' : 'var(--accent-green)',
@@ -126,20 +137,34 @@ export default function DefectsPage() {
 
       {/* Header */}
       <div className="page-header" style={{ borderRadius: 12, marginBottom: 24 }}>
-        <Space justify="space-between" style={{ width: '100%', display: 'flex' }}>
+        <Space justify="space-between" style={{ width: '100%', display: 'flex', flexWrap: 'wrap' }}>
           <div>
             <Title level={3} style={{ margin: 0, color: 'var(--text-primary)' }}>
               🔧 Defects Backlog
             </Title>
             <Text style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-              Maintenance defects from TMS · SMMS · TDMS
+              Maintenance defects from TMS · SMMS · TDMS (Ranked by Priority Score)
             </Text>
           </div>
           <Space>
-            <Tag className={scoringMode === 'ML' ? 'scoring-badge-ml' : 'scoring-badge-rule'}
-              style={{ padding: '4px 12px', fontSize: 12, borderRadius: 20 }}>
-              {scoringMode === 'ML' ? '🟢 AI/ML' : '🔵 Rule-Based'}
-            </Tag>
+            {/* 1-Click Mode Switcher */}
+            <Tooltip title={`Switch active model to ${isMlMode ? 'Rule-Based' : 'AI/ML'}`}>
+              <Button
+                onClick={() => switchMode(isMlMode ? 'RULE_BASED' : 'ML')}
+                loading={toggling}
+                icon={isMlMode ? <RobotOutlined style={{ color: '#3dd68c' }} /> : <CalculatorOutlined style={{ color: '#4f8ef7' }} />}
+                style={{
+                  borderRadius: 20,
+                  borderColor: isMlMode ? '#3dd68c' : '#4f8ef7',
+                  background: isMlMode ? 'rgba(61,214,140,0.1)' : 'rgba(79,142,247,0.1)',
+                  color: isMlMode ? '#3dd68c' : '#4f8ef7',
+                  fontWeight: 600,
+                }}
+              >
+                {isMlMode ? '🟢 AI/ML Model' : '🔵 Rule-Based'} (Click to Toggle)
+              </Button>
+            </Tooltip>
+
             <Button icon={<ReloadOutlined />} onClick={handleRescore} loading={loading}>
               Re-score
             </Button>
