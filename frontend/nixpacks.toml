@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "nginx"]
+nixPkgs = ["nodejs_20"]
 
 [phases.build]
 cmds = [
@@ -8,4 +8,4 @@ cmds = [
 ]
 
 [start]
-cmd = "nginx -g 'daemon off;'"
+cmd = "npx vite preview --port $PORT --host 0.0.0.0"
