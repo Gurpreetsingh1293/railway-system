@@ -58,6 +58,17 @@ class ScoreResponse(BaseModel):
     mode: str = "ML"
 
 
+@app.get("/")
+def root():
+    return {
+        "service": "RailBlock AI - ML Scoring Microservice",
+        "status": "online",
+        "model_loaded": _model_bundle is not None,
+        "docs_url": "/docs",
+        "health_url": "/health"
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "model_loaded": _model_bundle is not None}
